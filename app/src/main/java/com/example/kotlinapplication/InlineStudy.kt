@@ -16,16 +16,16 @@ class InlineStudy {
         foo2 { println("andy into2 Kotlin...") }
         //执行了这个方法会直接返回,后面的代码不再执行
 //        localReturn { return }
-        //没理解
-        localReturn2 { return@localReturn2 }
 
         testInline({ println("andy step 1...") }, { println("andy step 2...") })
 
         val list: List<Int> = listOf(1, 2, 3, 4, 5)
-        //foreach 中的 return 会结束 studyInline 方法
-        list.forEach { if (it == 3) return else println(it) }
+        //foreach 中的 return 会结束 studyInline 方法,因为是内联的
+//        list.forEach { if (it == 3) return else println(it) }
 
         println("lasted code")
+
+        getType<Int>()
     }
 
     fun foo(block: () -> Unit) {
@@ -51,18 +51,17 @@ class InlineStudy {
     }
 
     //非局部返回。内联函数的实现原理，会导致内联函数中的 return，会结束调用内联函数 的函数
+    //为了防止意外的非局部返回，可以使用 crossinline 修饰lambda参数。这样lambda语句中就不能使用 return 关键字
+    //在内联的 lambda 中，目前还不支持 break 和 continue
     private inline fun localReturn(returning: () -> Unit) {
         returning()
     }
 
-    //另一种 非局部返回。通过  @函数名  实现 ???????
-    fun localReturn2(returning: () -> Unit) {
-        println("before local return 2")
-        returning()
-        println("after local return 2")
-        return
+    //内联函数 支持 具体化参数类型，使用 reified 关键字实现
+    //普通函数不支持 reified
+    private inline fun <reified T> getType() {
+        println("class = ${T::class}")
+        println("class.java = ${T::class.java}")
     }
-
-    //具体化参数类型
 
 }
