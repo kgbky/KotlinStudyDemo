@@ -34,9 +34,9 @@ class ExampleUnitTest {
         val os = ObjectStudy(1)
         println("模式 = ${ObjectStudy.isRedpack(os)}")
 
-        InlineStudy().studyInline()
+//        InlineStudy().studyInline()
 
-
+        CoroutinesContextStudy().studyCoroutinesContext()
     }
 
 }
