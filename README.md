@@ -40,3 +40,8 @@ Kotlin 中 方法和类 默认是被final修饰的，加上 open 关键字可去
 
 ### 继承
 Kotlin 和 java 一样，单继承多实现
+
+### 注解
+图中的 @Documented 已被 @MustBeDocumented 替代
+![元注解对比](image2.jpg)
+![指定注解的作用位置](image3.jpg)
