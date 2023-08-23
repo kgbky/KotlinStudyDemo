@@ -1,16 +1,18 @@
 package com.example.kotlinapplication
 
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.system.measureTimeMillis
 import kotlin.time.ExperimentalTime
 
@@ -19,7 +21,7 @@ import kotlin.time.ExperimentalTime
  */
 class CoroutinesStudy {
 
-    //协程是轻量级线程
+    //协程是线程调度器
     fun studyCoroutines() {
         //GlobalScope 是全局的，只受整个应用程序的生命周期限制
         val job = GlobalScope.launch(Dispatchers.IO) { // 在后台启动一个新的协程并继续
@@ -43,7 +45,7 @@ class CoroutinesStudy {
             }
             println("Hello,") // 主协程
 //            delay(2000L)
-            job.join()//使用 join 替代 delay。更优雅，主协程会等待子协程执行完毕
+            job.join()//使用 join 替代 delay。更优雅，主协程会等待子协程执行完毕,再继续向下执行
             println("主协程执行完毕")
             //主协程 在其内部所有子协程都执行完毕时，才会结束。他们使用同一个 CoroutineScope
         }
@@ -109,6 +111,7 @@ class CoroutinesStudy {
                         delay(500L)
                     }
                 } catch (e: CancellationException) { //RuntimeException job 被取消时抛出
+                    //可以不捕获，它会被协程机制忽略
                     println("捕获到异常：$e")
                 } finally {
                     //finally 包裹的代码一定会被执行，可在这里释放资源
@@ -119,65 +122,112 @@ class CoroutinesStudy {
             println("main: I'm tired of waiting!")
             job.cancel() // 取消该作业,不取消的话，job会一直执行
             job.join() // 等待作业执行结束
-            job.cancelAndJoin()// 合并了 cancel 和 join 的调用
+//            job.cancelAndJoin()// 合并了 cancel 和 join 的调用
             println("main: Now I can quit.")
         }
 
-        //协程的取消是协作的，
+    }
+
+    fun studyCancelJob() {
+        //协程的取消是协作(理解为需要合作)的:
         //kotlinx.coroutines 包中的挂起函数都是可被取消的，它们检查协程的取消，并在取消时抛出CancellationException
         //编码时，我们也需要在协程代码中检查是否已取消。这和 java 结束一个线程的方式类似
-//        runBlocking {
-//            val startTime = System.currentTimeMillis()
-//            val job = launch(Dispatchers.IO) {
-//                var nextPrintTime = startTime
-//                var i = 0
-//                while (isActive) {//检查协程是否被取消
-//                    if (System.currentTimeMillis() >= nextPrintTime) {
-//                        println("job : i am sleeping ${i++}")
-//                        nextPrintTime += 500L
-//                    }
-//                }
-//            }
-//            delay(1300L)
-//            println("main: i am tired of waiting!")
-//            job.cancelAndJoin()
-//            println("main: Now I can quit")
-//        }
+        runBlocking {
+            val startTime = System.currentTimeMillis()
+            val job = launch(Dispatchers.IO) {
+                var nextPrintTime = startTime
+                var i = 0
+                while (isActive) {//检查协程是否被取消
+                    if (System.currentTimeMillis() >= nextPrintTime) {
+                        println("job : i am sleeping ${i++}")
+                        nextPrintTime += 500L
+                    }
+                }
+            }
+            delay(1300L)
+            println("main: i am tired of waiting!")
+            job.cancelAndJoin()
+            println("main: Now I can quit")
+        }
 
+    }
+
+    fun studyTimeout() {
+        runBlocking {
+            //超时时：withTimeout() 会抛出 TimeoutCancellationException 需要自己处理
+            //超时时：withTimeoutOrNull() 会返回 null，替代异常的抛出
+            val result = withTimeoutOrNull(1300L) {
+                repeat(1000) { i ->
+                    println("I'm sleeping $i ...")
+                    delay(500L)
+                }
+            }
+            println("Result is $result")
+        }
+    }
+
+    fun studyTimeOutResource() {
+        runBlocking {
+            repeat(100_000) { // Launch 100K coroutines
+                launch {
+                    val resource = withTimeout(600) { // Timeout of 600 ms
+                        delay(1000) // Delay for 1000 ms
+                        Resource() // Acquire a resource and return it from withTimeout block
+                    }
+                    resource.close() // Release the resource
+                }
+            }
+        }
+        // Outside of runBlocking all coroutines have completed
+        // Print the number of resources still acquired
+        println(acquired)
     }
 
     //操作多个挂起函数
     @OptIn(ExperimentalTime::class)
     fun studyMulti() {
         runBlocking {
-            //顺序执行
-            val time = measureTimeMillis {
-                val one = doSomethingUsefulOne()
-                val two = doSomethingUsefulTwo()
-                println("The answer is ${one + two}")
-            }
+            //顺序执行 用时大约 7500 ms
+//            val time = measureTimeMillis {
+//                val one = doSomethingUsefulOne()
+//                val two = doSomethingUsefulTwo()
+//                println("The answer is ${one + two}")
+//            }
+//            println("Completed in $time ms")
 
-            //并发执行 省时间
-            val time2 = measureTimeMillis {
-                val one = async { doSomethingUsefulOne() }
-                //  CoroutineStart.LAZY 表示惰性的。只有调用 wait() 或 start() 时才会启动
-                val two = async(start = CoroutineStart.LAZY) { doSomethingUsefulTwo() }
-                println("The answer is ${one.await() + two.await()}")
-            }
-            println("Completed in $time2 ms")
+            //并发执行 省时间 用时大约 5000 ms
+//            val time2 = measureTimeMillis {
+//                val one = async { doSomethingUsefulOne() }
+//                val two = async { doSomethingUsefulTwo() }
+//                println("The answer is ${one.await() + two.await()}")
+//            }
+//            println("Completed in $time2 ms")
+
+            //惰性启动的 async 用时大约 5000 ms
+//            val time2 = measureTimeMillis {
+//                // lazy 模式时，只有调用 await() or start() 才会启动协程
+//                val one = async(start = CoroutineStart.LAZY) { doSomethingUsefulOne() }
+//                val two = async(start = CoroutineStart.LAZY) { doSomethingUsefulTwo() }
+//                one.start()
+//                two.start()
+//                //只调用 await() 不调用start() 会导致顺序执行
+//                println("The answer is ${one.await() + two.await()}")
+//            }
+//            println("Completed(lazy async) in $time2 ms")
         }
 
         //调用async函数  kotlin完全不推荐这种写法
-        val time = measureTimeMillis {
-            // 我们可以在协程外面启动异步执行
-            val one = somethingUsefulOneAsync()
-            val two = somethingUsefulTwoAsync()
-            // 但是等待结果必须调用其它的挂起或者阻塞
-            // 当我们等待结果的时候，这里我们使用 `runBlocking { …… }` 来阻塞主线程
-            runBlocking {
-                println("The answer is ${one.await() + two.await()}")
-            }
-        }
+//        val time = measureTimeMillis {
+//            // 我们可以在协程外面启动异步执行
+//            val one = somethingUsefulOneAsync()
+//            val two = somethingUsefulTwoAsync()
+//            // 但是等待结果必须调用其它的挂起或者阻塞
+//            // 当我们等待结果的时候，这里我们使用 `runBlocking { …… }` 来阻塞主线程
+//            runBlocking {
+//                println("The answer is ${one.await() + two.await()}")
+//            }
+//        }
+//        println("Completed(async function) in $time ms")
 
         //结构化并发 Kotlin 使用这种方式 代替上面的方式
         runBlocking {
@@ -190,7 +240,7 @@ class CoroutinesStudy {
     }
 
     // 假设我们在这里做了一些有用的事
-    suspend fun doSomethingUsefulOne(): Int {
+    private suspend fun doSomethingUsefulOne(): Int {
         for (i in 1..5) {
             delay(500L)
             println("one function : $i")
@@ -200,7 +250,7 @@ class CoroutinesStudy {
     }
 
     // 假设我们在这里也做了一些有用的事
-    suspend fun doSomethingUsefulTwo(): Int {
+    private suspend fun doSomethingUsefulTwo(): Int {
         for (i in 1..5) {
             delay(1000L)
             println("two function : $i")
@@ -209,16 +259,16 @@ class CoroutinesStudy {
     }
 
     // somethingUsefulOneAsync 是普通函数，返回值类型是 Deferred<Int>
-    fun somethingUsefulOneAsync() = GlobalScope.async {
+    private fun somethingUsefulOneAsync() = GlobalScope.async {
         doSomethingUsefulOne()
     }
 
     // somethingUsefulTwoAsync 是普通函数，返回值类型是 Deferred<Int>
-    fun somethingUsefulTwoAsync() = GlobalScope.async {
+    private fun somethingUsefulTwoAsync() = GlobalScope.async {
         doSomethingUsefulTwo()
     }
 
-    suspend fun concurrentSum(): Int = coroutineScope {
+    private suspend fun concurrentSum(): Int = coroutineScope {
         val one = async { doSomethingUsefulOne() }
         val two = async { doSomethingUsefulTwo() }
         one.await() + two.await()
@@ -253,4 +303,16 @@ class CoroutinesStudy {
         one.await() + two.await()
     }
 
+}
+
+var acquired = 0
+
+class Resource {
+    init {
+        acquired++// Acquire the resource
+    }
+
+    fun close() {
+        acquired--// Release the resource
+    }
 }
