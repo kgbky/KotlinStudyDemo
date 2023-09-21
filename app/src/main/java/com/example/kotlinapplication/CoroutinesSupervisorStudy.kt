@@ -16,7 +16,7 @@ class CoroutinesSupervisorStudy {
 
     fun testSupervisorJob() {
         runBlocking {
-            //协程的(取消or失败)默认是双向转播的，SupervisorJob 的(取消or失败)只会向下传播
+            //协程的(失败)默认是双向转播的，SupervisorJob 的(失败)只会向下传播
             //这表示：子协程之间不会相互影响
             val supervisor = SupervisorJob()
             with(CoroutineScope(coroutineContext + supervisor)) {
