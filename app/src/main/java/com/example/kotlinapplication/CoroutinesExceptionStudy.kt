@@ -96,10 +96,10 @@ class CoroutinesExceptionStudy {
 
     fun testCancellationException() {
         val handler = CoroutineExceptionHandler { _, exception ->
-            println("CoroutineExceptionHandler got $exception")//4
+            println("CoroutineExceptionHandler got $exception")//4 并不会打印
         }
         runBlocking {
-            val job = launch {
+            val job = launch(handler) {
                 val child = launch {
                     try {
                         delay(Long.MAX_VALUE)

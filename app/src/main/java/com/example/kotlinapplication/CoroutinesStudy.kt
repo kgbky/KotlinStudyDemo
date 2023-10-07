@@ -25,7 +25,7 @@ class CoroutinesStudy {
     fun studyCoroutines() {
         //GlobalScope 是全局的，只受整个应用程序的生命周期限制
         val job = GlobalScope.launch(Dispatchers.IO) { // 在后台启动一个新的协程并继续
-            delay(1000L) // 非阻塞的等待 1 秒钟（默认时间单位是毫秒） 挂起协程
+            delay(1000L) // 非阻塞的等待 1 秒钟（默认时间单位是毫秒） 挂起(会释放底层线程用于其他用途)协程
             println("World!") // 在延迟后打印输出
             println("线程名字：${Thread.currentThread().name}")
             susFun()

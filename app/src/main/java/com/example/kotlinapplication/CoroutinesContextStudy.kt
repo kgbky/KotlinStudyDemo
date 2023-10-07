@@ -39,7 +39,7 @@ class CoroutinesContextStudy {
                 delay(500)
                 println("Unconfined : after delay I'm working in thread ${Thread.currentThread().name}")
             }
-            launch(Dispatchers.Default) { // 将会获取默认调度器，使用共享的后台线程池
+            launch(Dispatchers.Default) { // 将会获取默认调度器，使用共享的后台线程池，适合占用大量CPU资源的操作
                 println("Default : I'm working in thread ${Thread.currentThread().name}")
             }
             launch(Dispatchers.IO) { // 执行在IO线程，使用共享的后台线程池
