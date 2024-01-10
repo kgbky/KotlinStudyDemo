@@ -107,6 +107,7 @@ data class User(val name: String, val age: Int, var money: Int) {
     AnnotationTarget.FIELD,
 )
 @Retention(AnnotationRetention.RUNTIME)
+@Repeatable()//表示注解在单个元素上可重复
 @MustBeDocumented
 annotation class MyAnnotation(val bar: String)
 
@@ -115,3 +116,16 @@ data class Hero(
     @property:MyAnnotation("property") val name: String,
     @field:MyAnnotation("field") val initHp: Int
 )
+
+/**
+ * 精确指定注解的使用位置。(如不指定，Kotlin会帮我选择一个位置)
+ * file (文件)
+ * property（具有此目标的注解对 Java 不可见）
+ * field (标注 Java 字段)
+ * get（属性 getter）
+ * set（属性 setter）
+ * receiver（扩展函数或属性的接收者参数）
+ * param（构造函数参数）
+ * setparam（属性 setter 参数）
+ * delegate（为委托属性存储其委托实例的字段）
+ */

@@ -42,7 +42,7 @@ class Repository private constructor() {
         }
 
     companion object {
-        //伴生对线 等于 java static 修饰的变量
+        //伴生对线 通过 public static class 实现
         @Volatile
         private var INSTANCE: Repository? = null
         val instance: Repository?
