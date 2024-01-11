@@ -16,7 +16,11 @@ class AnyStudy {
     val i: Int? = null//32位
     val L: Long? = null
     val f: Float? = null//32位
-    val d: Double? = null
+    var d: Double = 0.8
+        set(value) {
+            field = value - 1
+        }
+        get() = field * 2
 
     //数组
     val funArray = arrayOf(1, 3, 5, 55)

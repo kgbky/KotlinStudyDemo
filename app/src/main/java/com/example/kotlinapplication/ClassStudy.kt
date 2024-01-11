@@ -46,7 +46,7 @@ class ClassStudy(var name: String, val age: Int = 1) {
         }
     }
 
-    //静态内部类 和 java 用 static 修饰内部类一致
+    //静态内部类 等于 java 中 public static final 修饰的内部类
     class StaticClass() {
         override fun toString(): String {
             return "我是一个静态内部类"

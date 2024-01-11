@@ -75,7 +75,7 @@ object ExpressionsStudy {
     fun studyInfix() {
         //中缀函数 例如：in step to 等
         val b = "a" to 1
-        val c = "a".to(2)//推挤使用上面的写法
+        val c = "a".to(2)//推荐使用上面的写法
         println(b)
         println(c)
     }
@@ -105,7 +105,7 @@ object ExpressionsStudy {
 
     fun studyAs(value: Any?) {
         //as 进行类型转换。转换失败，会抛出ClassCastException
-        //as? 是空安全的,转换失败，返回null
+        //as? 是 空安全 和 类型安全 的,转换失败会返回null
         val str: String? = value as? String
         if (str != null) println("字符串 参数，长度位 ${str.length}")
         else println("类型转换失败")
