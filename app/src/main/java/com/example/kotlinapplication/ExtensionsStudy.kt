@@ -22,11 +22,12 @@ class ExtensionsStudy {
         val array = "andy".toCharArray()
         val c = array[1] //对应get
         array[2] = '*'//对应set
-        println("char = $c array = ${array.toString()}")
+        println("char = $c array = ${array.contentToString()}")
     }
 
     //operator 标记该函数重载一个运算符
     //Kotlin 规定 +(plus) -(minus) *(times) /(div) 取余(rem)
+    //[] 索引运算符
     operator fun String.minus(that: String): String {
         val sb = StringBuilder()
         sb.append(this.substring(0, 2))
