@@ -3,7 +3,9 @@ package com.example.kotlinapplication
 /**
  * Created by lenovo on 2023/6/11    21:31
  *
- * 目前已知作用是为了优化 Lambda 开销
+ * 目前已知作用是为了优化 高阶函数 开销。每一个高阶函数都是一个对象
+ *
+ * inline 修饰符影响函数本身和传给它的 lambda 表达式：所有这些都将内联到调用处。
  */
 class InlineStudy {
     //定义：使用 inline 关键字修饰的函数

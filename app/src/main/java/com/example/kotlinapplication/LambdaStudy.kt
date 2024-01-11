@@ -33,4 +33,24 @@ class LambdaStudy {
     fun Int.sum(t: Int): Int {
         return this + t
     }
+
+    //函数实例化：Lambda实现，it 单个参数的隐式名称
+    var funInstance: ((Int) -> Unit)? = { println("x = $it") }
+
+    //函数实例化：匿名函数实现
+    var funInstance2: ((Int) -> Unit)? = fun(x: Int) { println("x = $x") }
+
+    //函数实例化：指向已定义的函数
+    var funInstance3: ((Int) -> Unit) = ::printInt
+
+    fun printInt(x: Int) {
+        println("x = $x")
+    }
+
+    //调用函数
+    fun callFunInstance() {
+        printInt(11)
+        funInstance3.invoke(22)//通过 invoke 操作符调用函数变量
+        funInstance3(33)//直接调用函数变量
+    }
 }
