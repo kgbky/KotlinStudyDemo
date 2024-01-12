@@ -2,6 +2,8 @@ package com.example.kotlinapplication
 
 /**
  * Created by lenovo on 2023/5/27    16:43
+ *
+ * 接口不保存状态，因为是方法的集合
  */
 interface InterfaceStudy {
     //抽象属性 java中没有
