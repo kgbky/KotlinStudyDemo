@@ -1,5 +1,6 @@
 package com.example.kotlinapplication
 
+import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -24,11 +25,10 @@ class CoroutinesStudy {
     //协程是线程调度器
     fun studyCoroutines() {
         //GlobalScope 是全局的，只受整个应用程序的生命周期限制
-        val job = GlobalScope.launch(Dispatchers.IO) { // 在后台启动一个新的协程并继续
+        val job = GlobalScope.launch(context = Dispatchers.IO) { // 在后台启动一个新的协程并继续
             delay(1000L) // 非阻塞的等待 1 秒钟（默认时间单位是毫秒） 挂起(会释放底层线程用于其他用途)协程
             println("World!") // 在延迟后打印输出
             println("线程名字：${Thread.currentThread().name}")
-            susFun()
         }
         println("Hello,") // 协程已在等待时主线程还在继续
         runBlocking { delay(2000L) }//runBlocking 会阻塞当前线程，直到其内部协程执行完毕
@@ -37,11 +37,10 @@ class CoroutinesStudy {
     //运行结果一致，但写法不同
     fun studyCoroutines2() {
         runBlocking {
-            val job = launch(Dispatchers.IO) {// 子协程
+            val job = launch(context = Dispatchers.IO) {// 子协程
                 delay(1000L) // 非阻塞的等待 1 秒钟（默认时间单位是毫秒） 挂起协程
                 println("World!") // 在延迟后打印输出
                 println("线程名字：${Thread.currentThread().name}")
-                susFun()
             }
             println("Hello,") // 主协程
 //            delay(2000L)
@@ -70,14 +69,15 @@ class CoroutinesStudy {
 
             println("Coroutine scope is over") // 这一行在内嵌 launch 执行完毕后才输出 4
         }
-
     }
 
     fun downloadImage() {
         GlobalScope.launch(Dispatchers.IO) {
+            Log.d(TAG, "downloadImage: ${Thread.currentThread().name}")
             delay(3000)//延迟3秒模拟下载图片
             withContext(Dispatchers.Main) {
                 //下载完成后切回到主线程，显示图片
+                Log.d(TAG, "showImage: ${Thread.currentThread().name}")
             }
         }
     }
@@ -125,7 +125,6 @@ class CoroutinesStudy {
 //            job.cancelAndJoin()// 合并了 cancel 和 join 的调用
             println("main: Now I can quit.")
         }
-
     }
 
     fun studyCancelJob() {
@@ -316,3 +315,5 @@ class Resource {
         acquired--// Release the resource
     }
 }
+
+private const val TAG = "CoroutinesStudy"
