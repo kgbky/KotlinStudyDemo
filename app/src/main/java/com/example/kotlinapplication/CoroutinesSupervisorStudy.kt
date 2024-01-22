@@ -50,7 +50,6 @@ class CoroutinesSupervisorStudy {
     fun testSupervisorScope() {
         runBlocking {
             try {
-                //supervisorScope 内部也是 使用SupervisorJob实现
                 supervisorScope {
                     val child = launch {
                         try {
@@ -77,8 +76,8 @@ class CoroutinesSupervisorStudy {
                 println("CoroutineExceptionHandler got $exception")
             }
             supervisorScope {
-                //每一个子作业都应该通过异常处理机制 处理自身的异常
-                //coroutineScope 中的子协程、设置了ExceptionHandler也不会生效
+                // supervisorScope 中每一个子作业都应该通过异常处理机制 处理自身的异常
+                // coroutineScope 中的子协程、设置了ExceptionHandler也不会生效
                 val child = launch(handler) {
                     println("The child throws an exception")
                     throw AssertionError()
