@@ -1,6 +1,5 @@
 package com.example.kotlinapplication
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
@@ -23,6 +22,7 @@ class CoroutinesExceptionStudy {
             val job =
                 GlobalScope.launch { // launch 根协程 launch方式将异常视为未捕获异常，可使用CoroutineExceptionHandler处理
                     //可使用CoroutineExceptionHandler
+                    //Try Catch 捕获不了该异常
                     println("Throwing exception from launch")
                     throw IndexOutOfBoundsException() // 我们将在控制台打印 IndexOutOfBoundsException
                 }
@@ -44,21 +44,23 @@ class CoroutinesExceptionStudy {
         }
     }
 
-    fun testExceptionHandler() {
-//        runBlocking {
-//            val handler = CoroutineExceptionHandler { _, exception ->
-//                //该处理者用于记录异常，显示某种错误消息，终止和（或）重新启动应用程序
-//                println("CoroutineExceptionHandler got $exception")
-//            }
-//            val job = GlobalScope.launch(context = handler) { // 根协程，运行在 GlobalScope 中
-//                throw AssertionError()
-//            }
-//            val deferred = GlobalScope.async(handler) { // 同样是根协程，但使用 async 代替了 launch
-//                throw ArithmeticException() // 没有打印任何东西，依赖用户去调用 deferred.await()并自己tryCatch
-//            }
-//            joinAll(job, deferred)
-//        }
+    fun testExceptionHandlerSample() {
+        runBlocking {
+            val handler = CoroutineExceptionHandler { _, exception ->
+                //该处理者用于记录异常，显示某种错误消息，终止和（或）重新启动应用程序
+                println("CoroutineExceptionHandler got $exception")
+            }
+            val job = GlobalScope.launch(context = handler) { // 根协程，运行在 GlobalScope 中
+                throw AssertionError()
+            }
+            val deferred = GlobalScope.async(handler) { // 同样是根协程，但使用 async 代替了 launch
+                throw ArithmeticException() // 没有打印任何东西，依赖用户去调用 deferred.await()并自己tryCatch
+            }
+            joinAll(job, deferred)
+        }
+    }
 
+    fun testExceptionHandler() {
         val handlerTop = CoroutineExceptionHandler { _, exception ->
             //这个handler设置了和没设置一样
             println("CoroutineExceptionHandler got $exception (handlerTop)")
@@ -91,7 +93,6 @@ class CoroutinesExceptionStudy {
             job.join()
             println("I am runBlocking last")//无join()最先输出1，有join()最后输出5
         }
-
     }
 
     fun testCancellationException() {
