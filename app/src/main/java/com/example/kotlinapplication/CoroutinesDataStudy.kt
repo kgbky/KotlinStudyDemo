@@ -19,9 +19,9 @@ import kotlin.system.measureTimeMillis
  * 学习如何处理：协程间数据共享
  */
 class CoroutinesDataStudy {
-    //Dispatchers.Default 和 Dispatchers.IO 协程调度器，其内部都是使用共享线程池实现。
-    //所以会遇到 多线程间的 数据安全问题
+    //协程内部是使用线程池实现，所以有 多线程间的 数据安全问题
 
+    @Volatile // 在 Kotlin 中 `volatile` 是一个注解
     private var counter = 0
 
     fun study() {
